@@ -1,9 +1,11 @@
 from flask import Blueprint, jsonify
+from ..models.region import Region
 
 region_controller = Blueprint('region', __name__)
 
 @region_controller.get('/regions')
 def get_regions():
+    regions = Region.query.all()
     return jsonify({'name': 'hello get'})
 
 @region_controller.post('/region')

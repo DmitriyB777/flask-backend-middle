@@ -1,17 +1,35 @@
 from flask import Blueprint, jsonify, request
+from ..models.region import Region
 from ..models.city import City;
 from ..extensions import db;
 
 city_controller = Blueprint('city', __name__)
 
 @city_controller.get('/cities')
-def get_regions():
-    cities = City.query.all()
+@city_controller.get('/cities/<int:region_id>')
+def get_cities(region_id=None):
+    if region_id is None:
+        all_cities = City.query.all()
+        return jsonify([{'id': c.id, 'name': c.name, 'region_id': c.region_id} for c in all_cities])
 
-    return jsonify([{'id': c.id, 'name': c.name, 'region_id': c.region_id} for c in cities])
+    region = Region.query.get(region_id)
+
+    if not region:
+        return jsonify({'error': 'Region not found'}), 404
+    
+    cities = City.query.filter(City.region_id == region_id).all()
+
+    if cities:
+        return jsonify([{'id': c.id, 'name': c.name, 'region_id': c.region_id} for c in cities])
+    else:
+        sub_regions = Region.query.filter(Region.parent_id == region_id).all()
+        if sub_regions:
+            return jsonify([{'id': r.id, 'name': r.name, 'parent_id': r.parent_id} for r in sub_regions])
+        else:
+            return jsonify({'message': 'No cities or sub-regions found for this region'}), 404
 
 @city_controller.post('/city')
-def add_region():
+def add_city():
     try:
         data = request.get_json()
 
@@ -30,7 +48,7 @@ def add_region():
         return jsonify({'error': 'Internal Server Error'}), 500
 
 @city_controller.put('/city/<int:id>')
-def update_region(id):
+def update_city(id):
     try:
         city = db.session.get(City, id)
 
@@ -56,7 +74,7 @@ def update_region(id):
         return jsonify({'error': 'Internal Server Error'}), 500
 
 @city_controller.delete('/city/<int:id>')
-def delete_region(id):
+def delete_city(id):
     try:
         city = db.session.get(City, id)
 

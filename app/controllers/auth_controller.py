@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request
 from ..models.user import User
-from ..extensions import db;
+from ..extensions import db
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import create_access_token, create_refresh_token
 
 auth_controller = Blueprint('auth', __name__)
 
@@ -11,8 +13,13 @@ def register():
 
         if not data or 'username' not in data or 'password' not in data:
             return jsonify({"error": "Bad Request"}), 400
+        
+        user = User.query.filter(User.username == data['username']).first()
 
-        user = User(username = data['username'], password = data['password'])
+        if user is not None:
+            return jsonify({'error': 'User already exists'}), 409
+
+        user = User(username = data['username'], password = generate_password_hash(data['password']))
 
         db.session.add(user)
 
@@ -22,3 +29,26 @@ def register():
     except:
         db.session.rollback()
         return jsonify({'error': 'Internal Server Error'}), 500
+    
+@auth_controller.post('/login')
+def login():
+    try:
+        data = request.get_json()
+
+        user = User.query.filter(User.username == data['username']).first()
+
+        if user and check_password_hash(user.password, data['password']):
+            token_access = create_access_token(user.username)
+            token_refresh = create_refresh_token(user.username)
+
+            return jsonify({
+                "message": "Logged In ",
+                "tokens": {
+                    "access": token_access,
+                    "refresh": token_refresh
+                }
+            }), 200
+        
+        return jsonify({'error': 'Invalid username or password'}), 400  
+    except:
+        return jsonify({'error': 'Internal Server Error'}), 500  

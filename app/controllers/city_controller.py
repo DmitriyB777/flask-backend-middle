@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from ..models.region import Region
-from ..models.city import City;
-from ..extensions import db;
+from ..models.city import City
+from ..extensions import db
 
 city_controller = Blueprint('city', __name__)
 

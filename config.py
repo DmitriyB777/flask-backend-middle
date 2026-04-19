@@ -6,3 +6,4 @@ class Config(object):
     database = 'flask-backend-middle-db'
     SQLALCHEMY_DATABASE_URI = f"postgresql://{username}:{password}@{host}:{port}/{database}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    JWT_SECRET_KEY = 'c8ae9051-783d-429b-97a0-c434b8c10472'

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from config import Config
 from .extensions import db, migrate, jwt
 from .controllers.region_controller import region_controller
@@ -25,5 +25,19 @@ def create_app():
     app.register_blueprint(region_controller, url_prefix='/api')
     app.register_blueprint(city_controller, url_prefix='/api')
     app.register_blueprint(auth_controller, url_prefix='/api')
+
+    # jwt error handlers
+
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_data):
+        return jsonify({"message": "Token has expired", "error": "expired_token"}), 401
+    
+    @jwt.invalid_token_loader
+    def invalid_token_callback(error):
+        return jsonify({"message": "Signature verification failed", "error": "invalid_token"}), 401
+    
+    @jwt.unauthorized_loader
+    def missing_token_callback(error):
+        return jsonify({"message": "Request doesn't contain valid token", "error": "authorization_token"}), 401
 
     return app

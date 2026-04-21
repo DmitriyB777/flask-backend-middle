@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required
 from ..models.region import Region
 from ..models.city import City
 from ..extensions import db
@@ -6,12 +7,14 @@ from ..extensions import db
 region_controller = Blueprint('region', __name__)
 
 @region_controller.get('/regions')
+@jwt_required()
 def get_regions():
     regions = Region.query.all()
 
     return jsonify([{'id': r.id, 'name': r.name, 'parent_id': r.parent_id} for r in regions])
 
 @region_controller.post('/region')
+@jwt_required()
 def add_region():
     try:
         data = request.get_json()
@@ -31,6 +34,7 @@ def add_region():
         return jsonify({'error': 'Internal Server Error'}), 500
 
 @region_controller.put('/region/<int:id>')
+@jwt_required()
 def update_region(id):
     try:
         region = db.session.get(Region, id)
@@ -57,6 +61,7 @@ def update_region(id):
         return jsonify({'error': 'Internal Server Error'}), 500
 
 @region_controller.delete('/region/<int:id>')
+@jwt_required()
 def delete_region(id):
     try:
         region = db.session.get(Region, id)

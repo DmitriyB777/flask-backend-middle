@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from ..models.user import User
 from ..extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
 
 auth_controller = Blueprint('auth', __name__)
 
@@ -52,3 +52,12 @@ def login():
         return jsonify({'error': 'Invalid username or password'}), 400  
     except:
         return jsonify({'error': 'Internal Server Error'}), 500  
+    
+@auth_controller.get('/refresh')
+@jwt_required(refresh=True)
+def refresh():
+    identity = get_jwt_identity()
+
+    access_token = create_access_token(identity=identity)
+
+    return jsonify({'access_token': access_token})

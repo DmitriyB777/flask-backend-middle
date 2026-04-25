@@ -1,8 +1,9 @@
 from flask import Blueprint, jsonify, request
 from ..models.user import User
+from ..models.token_block_list import TokenBlockList
 from ..extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
 
 auth_controller = Blueprint('auth', __name__)
 
@@ -61,3 +62,24 @@ def refresh():
     access_token = create_access_token(identity=identity)
 
     return jsonify({'access_token': access_token})
+
+@auth_controller.get('/logout')
+@jwt_required(verify_type=False)
+def logout():
+    try:
+        jwt = get_jwt()
+
+        jti = jwt['jti']
+
+        token_type = jwt['type']
+
+        token_block_list = TokenBlockList(jti = jti)
+
+        db.session.add(token_block_list)
+
+        db.session.commit()
+
+        return jsonify({"message": f"{token_type} token revoked successfully"}), 200
+    except:
+        db.session.rollback()
+        return jsonify({'error': 'Internal Server Error'}), 500  

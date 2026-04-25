@@ -4,6 +4,7 @@ from .extensions import db, migrate, jwt
 from .controllers.region_controller import region_controller
 from .controllers.city_controller import city_controller
 from .controllers.auth_controller import auth_controller
+from .models.token_block_list import TokenBlockList
 
 def create_app():
     # init app
@@ -39,5 +40,13 @@ def create_app():
     @jwt.unauthorized_loader
     def missing_token_callback(error):
         return jsonify({"message": "Request doesn't contain valid token", "error": "authorization_token"}), 401
+    
+    @jwt.token_in_blocklist_loader
+    def token_in_blocklist_callback(jwt_header, jwt_data):
+        jti = jwt_data['jti']
+
+        token = db.session.query(TokenBlockList).filter(TokenBlockList.jti == jti).scalar()
+
+        return token is not None
 
     return app

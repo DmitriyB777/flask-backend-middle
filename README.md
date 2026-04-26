@@ -6,9 +6,11 @@
 
 Сначала создайте рабочую директорию и настройте виртуальное окружение:
 
-`mkdir myproject`
-`cd myproject`
-`py -3 -m venv .venv`
+```
+   mkdir myproject`
+   cd myproject`
+   py -3 -m venv .venv
+```
 
 ### 📦 Установка зависимостей
 

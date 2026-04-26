@@ -7,39 +7,56 @@
 Сначала создайте рабочую директорию и настройте виртуальное окружение:
 
 ```
-   mkdir myproject`
-   cd myproject`
-   py -3 -m venv .venv
+    mkdir myproject`
+    cd myproject`
+    py -3 -m venv .venv
 ```
 
 ### 📦 Установка зависимостей
 
 Активируйте виртуальное окружение и установите необходимые библиотеки:
 
-`.venv\Scripts\activate`
-`pip install -r requirements.txt`
+```
+    .venv\Scripts\activate
+```
+
+```
+    pip install -r requirements.txt
+```
 
 ### 🐘 Настройка базы данных PostgreSQL
 
 Запустите контейнер PostgreSQL с помощью Docker:
 
-`docker run --name flask-backend-middle -p 5432:5432 -e POSTGRES_PASSWORD=root -d postgres`
+```
+    docker run --name flask-backend-middle -p 5432:5432 -e POSTGRES_PASSWORD=root -d postgres
+```
 
 После запуска контейнера создайте базу данных:
 
-`CREATE DATABASE "flask-backend-middle-db";`
+```
+    CREATE DATABASE "flask-backend-middle-db";
+```
 
 ### ⚙️ Миграции и запуск
 
 Примените последние миграции базы данных и запустите сервер:
 
-`flask db upgrade`
+```
+    flask db upgrade
+```
 
 **Обычный запуск**
-`flask --app main.py run`
+
+```
+    flask --app main.py run
+```
 
 **Запуск в режиме отладки (Debug mode)**
-`flask --app main.py run --debug`
+
+```
+    flask --app main.py run --debug
+```
 
 ---
 

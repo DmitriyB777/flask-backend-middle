@@ -7,8 +7,14 @@
 Сначала создайте рабочую директорию и настройте виртуальное окружение:
 
 ```
-    mkdir myproject`
-    cd myproject`
+    mkdir flask-backend-middle
+```
+
+```
+    cd flask-backend-middle
+```
+
+```
     py -3 -m venv .venv
 ```
 

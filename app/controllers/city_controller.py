@@ -38,6 +38,9 @@ def add_city():
 
         if not data or 'name' not in data or 'region_id' not in data:
             return jsonify({"error": "Bad Request"}), 400
+        
+        if data['region_id'] is None:
+            return jsonify({"error": "Bad Request"}), 400
 
         city = City(name = data['name'], region_id = data['region_id'])
 

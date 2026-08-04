@@ -72,6 +72,9 @@ def update_city(id):
         
         if 'region_id' in data:
             city.region_id = data['region_id']
+
+        if data['region_id'] is None:
+            return jsonify({"error": "Bad Request"}), 400
         
         db.session.commit()
 

@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
+from sqlalchemy import select, delete
 from ..models.region import Region
 from ..models.city import City
 from ..extensions import db
@@ -9,9 +10,14 @@ region_controller = Blueprint('region', __name__)
 @region_controller.get('/regions')
 @jwt_required()
 def get_regions():
-    regions = Region.query.all()
+    try:
+        query = select(Region)
+        regions = db.session.execute(query).scalars().all()
 
-    return jsonify([{'id': r.id, 'name': r.name, 'parent_id': r.parent_id} for r in regions])
+        return jsonify([{'id': r.id, 'name': r.name, 'parent_id': r.parent_id} for r in regions])
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'error': 'Internal Server Error'}), 500
 
 @region_controller.post('/region')
 @jwt_required()
@@ -22,6 +28,11 @@ def add_region():
         if not data or 'name' not in data or 'parent_id' not in data:
             return jsonify({"error": "Bad Request"}), 400
 
+        parent = db.session.get(Region, data['parent_id'])
+        
+        if not parent and data['parent_id'] is not None:
+            return jsonify({"error": "Parent region not found"}), 404
+
         region = Region(name = data['name'], parent_id = data['parent_id'])
 
         db.session.add(region)
@@ -29,8 +40,9 @@ def add_region():
         db.session.commit()
 
         return jsonify({'id': region.id, 'name': region.name, 'parent_id': region.parent_id}), 201
-    except:
+    except Exception as e:
         db.session.rollback()
+        print(f"Error: {e}")
         return jsonify({'error': 'Internal Server Error'}), 500
 
 @region_controller.put('/region/<int:id>')
@@ -46,18 +58,30 @@ def update_region(id):
 
         if not data:
             return jsonify({"error": "Bad Request"}), 400
-        
-        if 'name' in data:
+
+        if 'parent_id' in data and 'name' in data:
+            if data['parent_id'] == id:
+                return jsonify({"error": "A region cannot be its own parent"}), 400
+
+            parent = db.session.get(Region, data['parent_id'])
+
+            if not parent and data['parent_id'] is not None:
+                return jsonify({"error": "Parent region not found"}), 404
+
+            descendants = get_all_descendant_regions(id)
+
+            if data['parent_id'] in descendants:
+                return jsonify({"error": "Cannot move a region to one of its own descendants"}), 400
+
             region.name = data['name']
-        
-        if 'parent_id' in data:
             region.parent_id = data['parent_id']
         
         db.session.commit()
 
         return jsonify({'id': region.id, 'name': region.name, 'parent_id': region.parent_id}), 200
-    except:
+    except Exception as e:
         db.session.rollback()
+        print(f"Error: {e}")
         return jsonify({'error': 'Internal Server Error'}), 500
 
 @region_controller.delete('/region/<int:id>')
@@ -71,20 +95,18 @@ def delete_region(id):
 
         regions_ids_to_remove = get_all_descendant_regions(region.id)
 
-        cities_to_remove = City.query.filter(City.region_id.in_(regions_ids_to_remove)).all()
+        query = delete(City).where(City.region_id.in_(regions_ids_to_remove))
+        db.session.execute(query)
 
-        for c in cities_to_remove:
-            db.session.delete(c)
-        
-        regions_to_remove_objects = Region.query.filter(Region.id.in_(regions_ids_to_remove)).all()
-        for r in regions_to_remove_objects:
-            db.session.delete(r)
+        query = delete(Region).where(Region.id.in_(regions_ids_to_remove))
+        db.session.execute(query)
 
         db.session.commit()
 
         return jsonify({'message': 'The item was successfully deleted'}), 200
-    except:
+    except Exception as e:
         db.session.rollback()
+        print(f"Error: {e}")
         return jsonify({'error': 'Internal Server Error'}), 500
 
 def get_all_descendant_regions(region_id):
@@ -95,7 +117,9 @@ def get_all_descendant_regions(region_id):
         current_region_id = regions_to_process.pop()
         descendant_regions_ids.add(current_region_id)
 
-        subregions = Region.query.filter_by(parent_id=current_region_id).all()
+        query = select(Region).filter_by(parent_id=current_region_id)
+        subregions = db.session.execute(query).scalars().all()
+
         for subregion in subregions:
             regions_to_process.append(subregion.id)
             

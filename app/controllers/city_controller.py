@@ -1,9 +1,10 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import select
-from ..models.region import Region
-from ..models.city import City
+
 from ..extensions import db
+from ..models.city import City
+from ..models.region import Region
 
 city_controller = Blueprint("city", __name__)
 

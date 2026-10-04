@@ -1,16 +1,17 @@
 from flask import Blueprint, jsonify, request
-from sqlalchemy import select
-from ..models.user import User
-from ..models.token_block_list import TokenBlockList
-from ..extensions import db
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
+    get_jwt,
     get_jwt_identity,
     jwt_required,
-    get_jwt,
 )
+from sqlalchemy import select
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from ..extensions import db
+from ..models.token_block_list import TokenBlockList
+from ..models.user import User
 
 auth_controller = Blueprint("auth", __name__)
 

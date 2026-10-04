@@ -1,9 +1,11 @@
 from flask import Flask, jsonify
+
 from config import Config
-from .extensions import db, migrate, jwt
-from .controllers.region_controller import region_controller
-from .controllers.city_controller import city_controller
+
 from .controllers.auth_controller import auth_controller
+from .controllers.city_controller import city_controller
+from .controllers.region_controller import region_controller
+from .extensions import db, jwt, migrate
 from .models.token_block_list import TokenBlockList
 
 

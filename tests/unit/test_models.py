@@ -47,6 +47,17 @@ def test_region_parent_id_is_nullable():
     assert Region.__table__.c.parent_id.nullable is True
 
 
+def test_region_parent_id_has_foreign_key_to_region_id():
+    foreign_keys = {
+        fk.target_fullname for fk in Region.__table__.c.parent_id.foreign_keys
+    }
+    assert foreign_keys == {"region.id"}
+
+
+def test_region_parent_id_is_indexed():
+    assert Region.__table__.c.parent_id.index is True
+
+
 def test_city_name_is_unique_and_not_null():
     column = City.__table__.c.name
     assert column.unique is True

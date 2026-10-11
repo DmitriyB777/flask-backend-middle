@@ -26,5 +26,29 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
     "ruff>=0.16.10",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-ra -q"
+markers = [
+    "unit: isolated unit tests using mocks",
+    "integration: tests hitting the Flask test client with an in-memory DB",
+    "e2e: full end-to-end user journeys",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py314"
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "config"]

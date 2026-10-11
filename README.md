@@ -2,58 +2,50 @@
 
 Инструкция по развертыванию и запуску проекта
 
-### 🛠 Подготовка окружения
-
-Сначала настройте виртуальное окружение:
-
-```
-    py -3 -m venv .venv
-```
-
 ### 📦 Установка зависимостей
 
-Активируйте виртуальное окружение и установите необходимые библиотеки:
+Проект использует пакетный менеджер uv. Виртуальное окружение и зависимости устанавливаются одной командой:
 
 ```
-    .venv\Scripts\activate
-```
-
-```
-    pip install -r requirements.txt
+    uv sync
 ```
 
 ### 🐘 Настройка базы данных PostgreSQL
 
-Запустите контейнер PostgreSQL с помощью Docker:
+Создайте пользовательскую сеть Docker с подсетью (достаточно выполнить один раз):
 
 ```
-    docker run --name flask-backend-middle -p 5432:5432 -e POSTGRES_PASSWORD=root -d postgres
+    docker network create --subnet=172.18.0.0/16 flask-backend-middle-net
 ```
 
-После запуска контейнера создайте базу данных:
+Запустите контейнер PostgreSQL с постоянным IP-адресом:
 
 ```
-    CREATE DATABASE "flask-backend-middle-db";
+    docker run --name flask-backend-middle --network flask-backend-middle-net --ip 172.18.0.10 -p 5432:5432 -e POSTGRES_PASSWORD=root -e POSTGRES_DB="flask-backend-middle-db" -d postgres
 ```
+
+База данных flask-backend-middle-db создается автоматически при первом запуске контейнера благодаря переменной POSTGRES_DB, поэтому создавать базу данных вручную не нужно.
+
+Контейнер всегда получает один и тот же адрес 172.18.0.10 в сети flask-backend-middle-net. Статический IP работает только в пользовательской сети — во встроенной сети bridge ключ --ip не поддерживается. Для подключения с хоста по-прежнему используется 127.0.0.1:5432 (проброс порта -p), так как на Windows и macOS контейнерный IP не маршрутизируется напрямую.
 
 ### ⚙️ Миграции и запуск
 
-Примените последние миграции базы данных и запустите сервер:
+Примените последние миграции базы данных:
 
 ```
-    flask db upgrade
+    uv run flask db upgrade
 ```
 
 **Обычный запуск**
 
 ```
-    flask --app main.py run
+    uv run flask --app main.py run
 ```
 
 **Запуск в режиме отладки (Debug mode)**
 
 ```
-    flask --app main.py run --debug
+    uv run flask --app main.py run --debug
 ```
 
 ---

@@ -33,10 +33,11 @@ def add_region():
         if not data or "name" not in data or "parent_id" not in data:
             return jsonify({"error": "Bad Request"}), 400
 
-        parent = db.session.get(Region, data["parent_id"])
+        if data["parent_id"] is not None:
+            parent = db.session.get(Region, data["parent_id"])
 
-        if not parent and data["parent_id"] is not None:
-            return jsonify({"error": "Parent region not found"}), 404
+            if parent is None:
+                return jsonify({"error": "Parent region not found"}), 404
 
         region = Region(name=data["name"], parent_id=data["parent_id"])
 
@@ -71,10 +72,11 @@ def update_region(id):
             if data["parent_id"] == id:
                 return jsonify({"error": "A region cannot be its own parent"}), 400
 
-            parent = db.session.get(Region, data["parent_id"])
+            if data["parent_id"] is not None:
+                parent = db.session.get(Region, data["parent_id"])
 
-            if not parent and data["parent_id"] is not None:
-                return jsonify({"error": "Parent region not found"}), 404
+                if parent is None:
+                    return jsonify({"error": "Parent region not found"}), 404
 
             descendants = get_all_descendant_regions(id)
 

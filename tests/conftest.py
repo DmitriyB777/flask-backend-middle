@@ -129,7 +129,7 @@ def registered_user(client, sample_user_data):
 def access_token(client, registered_user, sample_user_data):
     """Log in the registered user and return the access token string."""
     response = client.post("/api/login", json=sample_user_data)
-    assert response.status_code == 200.
+    assert response.status_code == 200
     return response.get_json()["tokens"]["access"]
 
 

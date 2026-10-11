@@ -48,6 +48,54 @@
     uv run flask --app main.py run --debug
 ```
 
+### 🧪 Тесты
+
+Запустите весь набор тестов:
+
+```
+    uv run pytest
+```
+
+Отдельные уровни тестов (по маркерам):
+
+```
+    uv run pytest -m unit
+    uv run pytest -m integration
+    uv run pytest -m e2e
+```
+
+Проверка покрытия кода:
+
+```
+    uv run pytest --cov=app --cov-report=term-missing
+```
+
+### 🧹 Линтер и форматирование (ruff)
+
+Проверить код линтером:
+
+```
+    uv run ruff check .
+```
+
+Автоматически исправить найденные проблемы:
+
+```
+    uv run ruff check --fix .
+```
+
+Отформатировать код:
+
+```
+    uv run ruff format .
+```
+
+Проверить форматирование без изменений:
+
+```
+    uv run ruff format --check .
+```
+
 ---
 
 ⚠️ _Убедитесь, что Docker запущен перед выполнением команд по настройке базы данных._
